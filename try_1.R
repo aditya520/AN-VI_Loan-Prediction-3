@@ -20,42 +20,51 @@ str(loan_status)
 full = rbind(train,test)
 str(full)
 
-##GENDER
+#GENDER
 summary(full$Gender)
 
-male_impute = subset(full,full$Gender == '')
-male_impute_1 = subset(full,full$Gender != '')
-table(is.na(male_impute_1))
-male_impute_1 = na.omit(male_impute_1)
-imp_gender_model = glm(Gender~.,data = male_impute_1,family = binomial())
-step(imp_gender_model)
-summary(imp_gender_model)
+ggplot(train,aes(x = Gender,y = loan_status)) + 
+        geom_jitter()
 
-step_imp_gender_model = glm(formula = Gender ~ Married + Dependents + Education + ApplicantIncome + 
-                              CoapplicantIncome + Loan_Amount_Term + Property_Area, family = binomial(), 
-                            data = male_impute_1)
-summary(step_imp_gender_model)
-
-male_impute$Gender = NULL
-step_imp_gender_model.pred = predict(step_imp_gender_model,newdata = male_impute,type = "response")
-
-gender_impute <- vector()
-for(i in 1:length(step_imp_gender_model.pred))
-{
-  if(step_imp_gender_model.pred[i] >=0.5)  
-    gender_impute[i] = "Male"
-  else
-    gender_impute[i] = "Female"
-}
-j = 1
-for(i in which(full$Gender ==''))
-{
-  full$Gender[i] = gender_impute[j]
-  j = j + 1
-}
-
+table(train$Gender,loan_status)
+#Imputing with Mode
+full$Gender[full$Gender == ''] = 'Male'
 summary(full$Gender)
 full$Gender = factor(full$Gender)
+# 
+# male_impute = subset(full,full$Gender == '')
+# male_impute_1 = subset(full,full$Gender != '')
+# table(is.na(male_impute_1))
+# male_impute_1 = na.omit(male_impute_1)
+# imp_gender_model = glm(Gender~.,data = male_impute_1,family = binomial())
+# step(imp_gender_model)
+# summary(imp_gender_model)
+# 
+# step_imp_gender_model = glm(formula = Gender ~ Married + Dependents + Education + ApplicantIncome + 
+#                               CoapplicantIncome + Loan_Amount_Term + Property_Area, family = binomial(), 
+#                             data = male_impute_1)
+# summary(step_imp_gender_model)
+# 
+# male_impute$Gender = NULL
+# step_imp_gender_model.pred = predict(step_imp_gender_model,newdata = male_impute,type = "response")
+# 
+# gender_impute <- vector()
+# for(i in 1:length(step_imp_gender_model.pred))
+# {
+#   if(step_imp_gender_model.pred[i] >=0.5)  
+#     gender_impute[i] = "Male"
+#   else
+#     gender_impute[i] = "Female"
+# }
+# j = 1
+# for(i in which(full$Gender ==''))
+# {
+#   full$Gender[i] = gender_impute[j]
+#   j = j + 1
+# }
+# 
+# summary(full$Gender)
+# full$Gender = factor(full$Gender)
 
 ##Married
 summary(full$Married)
@@ -69,8 +78,7 @@ length(loan_status)
 ##Dependents
 summary(full$Dependents)
 summary(train$Dependents)
-full$Dependents[full$Dependents == ''] = NA
-full$Dependents = as.numeric(full$Dependents)
+full$Dependents[full$Dependents == ''] = 0
 full$Dependents = factor(full$Dependents)
 
 ##Education
@@ -79,9 +87,9 @@ str(full$Education)
 
 ##Self-Employed
 summary(full$Self_Employed)
-
 summary(train$Self_Employed)
-
+full$Self_Employed[full$Self_Employed == ''] = 'No'
+full$Self_Employed = factor(full$Self_Employed)
 ##Applicant-Income
 summary(full$ApplicantIncome)
 which(full$ApplicantIncome == 0)
