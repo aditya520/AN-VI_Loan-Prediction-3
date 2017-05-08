@@ -101,32 +101,42 @@ summary(train$ApplicantIncome)
 
 ##Loan Amount
 summary(full$LoanAmount)
-which(is.na(full$LoanAmount))
-
+summary(train$LoanAmount)
+full$LoanAmount[is.na(full$LoanAmount)] = 142.5
 ##Loan Amount Term
 summary(full$Loan_Amount_Term)
-which(is.na(full$Loan_Amount_Term))
+summary(train$Loan_Amount_Term)
+
+full$Loan_Amount_Term[is.na(full$Loan_Amount_Term)] = 360
 
 ##Credit History
 summary(full$Credit_History)
+summary(train$Credit_History)
+full$Credit_History = factor(full$Credit_History)
+full$Credit_History[is.na(full$Credit_History)] = 2
 
 ##Property_Area
 summary(full$Property_Area)
 
-md.pattern(full)
+##New variable EMI
+full$EMI = full$LoanAmount/(full$Loan_Amount_Term/30)
+head(full$EMI)
+summary(full$EMI)
+full[full$EMI == 650,]
 
-#Splitting out the data
+##New Variable - Total Income
+full$totalI = full$ApplicantIncome + 0.6*full$CoapplicantIncome
+head(full$totalI)
+
+length(loan_status)
 train_new = full[1:611,]
-train_new$Loan_Status = loan_status
 test_new = full[612:978,]
 
-##Now going to Python
-write.csv(train_new,"train_new.csv",row.names = F)
-write.csv(test_new,"test_new.csv",row.names = F)
+train_new$Loan_Status = loan_status
 
-##Splitting data
-split = sample.split(train_new$Loan_Status,SplitRatio = 0.6)
+#Splitting the training data
+split = sample.split(train_new$Loan_Status,SplitRatio = 0.65)
 tr = subset(train_new,split == T)
 te = subset(train_new,split == F)
 
-
+#Logistic Model
