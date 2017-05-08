@@ -125,9 +125,9 @@ summary(full$EMI)
 full[full$EMI == 650,]
 
 ##New Variable - Total Income
-full$totalI = full$ApplicantIncome + 0.6*full$CoapplicantIncome
-head(full$totalI)
 
+full$totalI = NULL
+#divinding data back
 length(loan_status)
 train_new = full[1:611,]
 test_new = full[612:978,]
@@ -140,3 +140,34 @@ tr = subset(train_new,split == T)
 te = subset(train_new,split == F)
 
 #Logistic Model
+log_model = glm(Loan_Status ~ .,data =tr,family = binomial())
+summary(log_model)
+log_model.pred = predict(log_model,newdata = te,type = "response")
+table(log_model.pred>0.5,te$Loan_Status)
+
+step(log_model)
+log_model_step = glm(formula = Loan_Status ~ Married + Credit_History + Property_Area, 
+                     family = binomial(), data = tr)
+summary(log_model_step)
+log_model_step.pred = predict(log_model_step,newdata = te,type = "response")
+table(te$Loan_Status,log_model_step.pred > 0.5)
+
+##CART
+library(rpart)
+library(rpart.plot)
+cart_model = rpart(Loan_Status ~ .,data =tr)
+prp(cart_model)
+cart_model.pred = predict(cart_model,newdata = te,type = "class")
+table(te$Loan_Status,cart_model.pred)
+
+#RandomForest
+library(randomForest)
+RF_model = randomForest(Loan_Status ~ .,data =tr)
+RF_model.pred = predict(RF_model, newdata = te)
+table(te$Loan_Status,RF_model.pred)
+
+#LDA
+library(MASS)
+lda_model = lda(Loan_Status ~ .,data =tr)
+lda_model.pred = predict(lda_model,newdata = te,type = "response")
+table(lda_model.pred$class,te$Loan_Status)
