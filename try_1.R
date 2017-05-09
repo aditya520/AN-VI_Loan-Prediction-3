@@ -1,4 +1,5 @@
-setwd("D:/Practice/R/AnalyticsVidya/Loan Prediction 3/")
+#setwd("D:/Practice/R/AnalyticsVidya/Loan Prediction 3/")
+setwd("C:/data/loan-av-1/")
 train = read.csv("train.csv")
 test = read.csv("test.csv")
 
@@ -24,7 +25,7 @@ str(full)
 summary(full$Gender)
 
 ggplot(train,aes(x = Gender,y = loan_status)) + 
-        geom_jitter()
+  geom_jitter()
 
 table(train$Gender,loan_status)
 #Imputing with Mode
@@ -139,35 +140,72 @@ split = sample.split(train_new$Loan_Status,SplitRatio = 0.65)
 tr = subset(train_new,split == T)
 te = subset(train_new,split == F)
 
-#Logistic Model
-log_model = glm(Loan_Status ~ .,data =tr,family = binomial())
-summary(log_model)
-log_model.pred = predict(log_model,newdata = te,type = "response")
-table(log_model.pred>0.5,te$Loan_Status)
+# #Logistic Model
+# log_model = glm(Loan_Status ~ .,data =tr,family = binomial())
+# summary(log_model)
+# log_model.pred = predict(log_model,newdata = te,type = "response")
+# table(log_model.pred>0.5,te$Loan_Status)
+# 
+# step(log_model)
+# log_model_step = glm(formula = Loan_Status ~ Married + Credit_History + Property_Area, 
+#                      family = binomial(), data = tr)
+# summary(log_model_step)
+# log_model_step.pred = predict(log_model_step,newdata = te,type = "response")
+# table(te$Loan_Status,log_model_step.pred > 0.5)
+# 
+# ##CART
+# library(rpart)
+# library(rpart.plot)
+# cart_model = rpart(Loan_Status ~ .,data =tr)
+# prp(cart_model)
+# cart_model.pred = predict(cart_model,newdata = te,type = "class")
+# table(te$Loan_Status,cart_model.pred)
+# 
+# #RandomForest
+# library(randomForest)
+# RF_model = randomForest(Loan_Status ~ .,data =tr)
+# RF_model.pred = predict(RF_model, newdata = te)
+# table(te$Loan_Status,RF_model.pred)
+# 
+# #LDA
+# library(MASS)
+# lda_model = lda(Loan_Status ~ .,data =tr)
+# lda_model.pred = predict(lda_model,newdata = te,type = "response")
+# table(lda_model.pred$class,te$Loan_Status)
 
-step(log_model)
-log_model_step = glm(formula = Loan_Status ~ Married + Credit_History + Property_Area, 
-                     family = binomial(), data = tr)
-summary(log_model_step)
-log_model_step.pred = predict(log_model_step,newdata = te,type = "response")
-table(te$Loan_Status,log_model_step.pred > 0.5)
+##Trying XGBoost
+#Converting Gender to numeric
+str(tr)
+head(tr$Gender)
+tr$Gender = ifelse(tr$Gender == "Male",1,0)
+te$Gender = ifelse(te$Gender == "Male",1,0)
+str(tr$Gender)
 
-##CART
-library(rpart)
-library(rpart.plot)
-cart_model = rpart(Loan_Status ~ .,data =tr)
-prp(cart_model)
-cart_model.pred = predict(cart_model,newdata = te,type = "class")
-table(te$Loan_Status,cart_model.pred)
+#Married
+tr$Married = ifelse(tr$Married == "Yes",1,0)
+te$Married = ifelse(te$Married == "Yes",1,0)
 
-#RandomForest
-library(randomForest)
-RF_model = randomForest(Loan_Status ~ .,data =tr)
-RF_model.pred = predict(RF_model, newdata = te)
-table(te$Loan_Status,RF_model.pred)
+str(tr$Married)
 
-#LDA
-library(MASS)
-lda_model = lda(Loan_Status ~ .,data =tr)
-lda_model.pred = predict(lda_model,newdata = te,type = "response")
-table(lda_model.pred$class,te$Loan_Status)
+#Dependents
+levels(tr$Dependents)[4] = 3
+tr$Dependents = as.numeric(tr$Dependents)
+levels(te$Dependents)[4] = 3
+te$Dependents = as.numeric(te$Dependents)
+
+#Education
+tr$Education = ifelse(tr$Education == "Not Graduate",1,0)
+te$Education = ifelse(te$Education == "Graduate",1,0)
+
+#Self Employed
+tr$Self_Employed = ifelse(tr$Self_Employed == "Yes",1,0)
+te$Self_Employed = ifelse(te$Self_Employed == "Yes",1,0)
+
+#Credit History
+head(tr$Credit_History)
+tr$Credit_History = as.numeric(tr$Credit_History)
+te$Credit_History = as.numeric(te$Credit_History)
+
+#Property_area
+tr$Property_Area = as.numeric(tr$Property_Area)
+te$Property_Area = as.numeric(te$Property_Area)
